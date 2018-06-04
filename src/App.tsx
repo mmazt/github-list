@@ -1,26 +1,34 @@
 import * as React from 'react';
-import './App.css';
-import { get } from './services/Request';
+import { Route, Switch } from 'react-router-dom';
 
-import logo from './logo.svg';
+import './App.css';
+import Repo from './components/Repo';
+import ReposList from './components/ReposList';
+import Search from './components/Search';
+
+import { get } from './services/Request';
 
 class App extends React.Component {
   public componentWillMount() {
-    get('repos/mmazt/github-list/commits').then(res => {
+    get('/repos/mmazt/github-list/commits').then(res => {
       console.log(res);
     });
   }
   public render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.tsx</code> and save to reload.
-        </p>
-      </div>
+      <Switch>
+        <Route exact={true} path="/" component={ReposList} />
+        <Route>
+          <div>
+            <Route exact={true} path="/:repo" component={Repo} />
+            <Route exact={true} path="/:repo" component={Search} />
+          </div>
+        </Route>
+      </Switch>
+
+      //  <div className="App">
+      //     <Repos />
+      //   </div>
     );
   }
 }
