@@ -1,33 +1,53 @@
 import * as React from 'react';
-import { get } from '../services/Request';
+import { connect } from 'react-redux';
+import { Grid, List } from 'semantic-ui-react';
+import { getCommits } from '../actions/searchActions';
+import { formatDate } from '../services/Date';
 
-interface IState {
-  repo: string;
-  data: any;
-}
-
-class Repo extends React.Component<any, IState> {
+class Repo extends React.Component<any> {
   constructor(props: any) {
     super(props);
-    this.state = { repo: this.props.match.params.repo, data: [] };
+    this.props.dispatch(getCommits('mmazt', this.props.match.params.repo));
   }
-  public componentWillMount() {
-    get('/repos/mmazt/' + this.state.repo + '/commits').then((res: any) => {
-      const result = res.map((item: any) => {
+
+  public transformResults(results: any) {
+    if (results && results.length > 0) {
+      const transform = results.map((item: any) => {
         return (
-          <div key={item.sha}>
-            Author: {item.commit.author.name}
-            Description: {item.commit.message} Created:{' '}
-            {item.commit.author.date}
-          </div>
+          <List.Item key={item.sha}>
+            <List.Content>
+              <List.Header>
+                <a href={item.html_url}>{item.sha}</a>
+              </List.Header>
+              <List.Description>
+                <strong>Description:</strong> {item.commit.message}
+                <br />
+                <strong>Author:</strong> {item.commit.author.name}
+                <br />
+                <strong>Created:</strong> {formatDate(item.commit.author.date)}
+              </List.Description>
+            </List.Content>
+          </List.Item>
         );
       });
-      this.setState({ data: result });
-    });
+      return transform;
+    } else {
+      return '';
+    }
   }
   public render() {
-    return <div>{this.state.data}</div>;
+    return (
+      <Grid container={true} centered={true} padded={true}>
+        <List relaxed={true} size="medium" divided={true}>
+          {this.transformResults(this.props.results)}{' '}
+        </List>
+      </Grid>
+    );
   }
 }
 
-export default Repo;
+const mapStateToProps = (state: any) => {
+  return state.searchReducer;
+};
+
+export default connect(mapStateToProps)(Repo);

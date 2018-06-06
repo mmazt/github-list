@@ -1,5 +1,7 @@
 import * as React from 'react';
-import { completeGet } from '../services/Request';
+import { connect } from 'react-redux';
+import { Button, Grid, Input } from 'semantic-ui-react';
+import { searchAction } from '../actions/searchActions';
 
 interface IState {
   repo: string;
@@ -11,38 +13,38 @@ class Search extends React.Component<any, IState> {
     super(props);
     this.state = { repo: this.props.match.params.repo, term: '' };
   }
-  public componentWillMount() {
-    // get('/repos/mmazt/' + this.state.repo + '/commits').then((res: any) => {
-    //   const result = res.map((item: any) => {
-    //     return (
-    //       <div key={item.sha}>
-    //         Author: {item.commit.author.name}
-    //         Description: {item.commit.message} Created:{' '}
-    //         {item.commit.author.date}
-    //       </div>
-    //     );
-    //   });
-    //   this.setState({ data: result });
-    // });
-  }
+
   public handleTerm = (e: any) => {
     this.setState({ term: e.currentTarget.value });
   };
   public search = () => {
-    completeGet(
-      '/search/commits?q=repo:mmazt/' + this.state.repo + '+' + this.state.term
-    ).then((res: any) => {
-      console.log(res);
-    });
+    this.props.dispatch(searchAction(this.state.term, this.state.repo));
   };
+  public handleEnter = (e: any) => {
+    if (e.key === 'Enter') {
+      this.props.dispatch(searchAction(this.state.term, this.state.repo));
+    }
+  };
+
+  public back = () => {
+    this.props.history.push('/');
+  };
+
   public render() {
     return (
-      <div>
-        <input value={this.state.term} onChange={this.handleTerm} />
-        <button onClick={this.search}>Search</button>
-      </div>
+      <Grid container={true} centered={true} padded={true}>
+        <Grid.Row>
+          <Button onClick={this.back} icon="arrow left" />
+          <Input
+            value={this.state.term}
+            onChange={this.handleTerm}
+            onKeyDown={this.handleEnter}
+          />
+          <Button onClick={this.search}>Search</Button>
+        </Grid.Row>
+      </Grid>
     );
   }
 }
 
-export default Search;
+export default connect()(Search);
